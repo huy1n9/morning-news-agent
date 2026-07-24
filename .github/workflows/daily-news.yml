@@ -24,6 +24,11 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
+      - name: DNS 连通性检查
+        run: |
+          echo "=== DNS 解析测试 ==="
+          python3 -c "import socket; print('smtp.163.com →', socket.getaddrinfo('smtp.163.com', 465))"
+
       - name: 运行每日早报
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -32,6 +37,6 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_SMTP_SERVER: ${{ secrets.EMAIL_SMTP_SERVER }}
-          EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+          EMAIL_SMTP_SERVER: smtp.163.com
+          EMAIL_SMTP_PORT: "465"
         run: python main.py
