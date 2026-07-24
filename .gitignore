@@ -1,0 +1,19 @@
+# 敏感信息
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# 日志
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
