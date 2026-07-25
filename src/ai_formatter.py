@@ -4,7 +4,7 @@ AI 格式化模块 — 使用 DeepSeek API 将原始新闻整理为结构化早�
 
 import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from openai import OpenAI
 
@@ -18,9 +18,7 @@ SYSTEM_PROMPT = """你是一位资深的新闻编辑，每天早上为读者制�
 
 你的任务是将提供的原始新闻列表，整理成一份结构清晰、重点突出的新闻摘要。
 
-请严格按以下格式输出 HTML 邮件内容：
-
-<h2>📰 {date} 每日早报</h2>
+请严格按以下格式输出 HTML 邮件内容（邮件标题已包含日期，正文无需再写标题）：
 
 <p style="color:#666;">共 {count} 条重要新闻，祝你一天好心情 ☀️</p>
 
@@ -58,7 +56,7 @@ SYSTEM_PROMPT = """你是一位资深的新闻编辑，每天早上为读者制�
 3. 同一事件的报道合并为一条，选择最权威的来源
 4. 优先报道与中文读者相关的新闻
 5. 如果没有某类新闻，可省略该版块
-6. 只输出 HTML 片段（从 <h2> 到 </p>），不要 ```html``` 标记
+6. 只输出 HTML 片段（从计数行到末尾），不要 ```html``` 标记
 """
 
 
@@ -91,10 +89,7 @@ class AIFormatter:
 
         # 构建新闻文本输入
         news_text = self._build_news_text(news_items)
-        today_str = datetime.now(CST).strftime("%Y年%m月%d日")
-
-        prompt = SYSTEM_PROMPT.replace("{date}", today_str)
-        prompt = prompt.replace("{count}", str(len(news_items)))
+        prompt = SYSTEM_PROMPT.replace("{count}", str(len(news_items)))
         prompt = prompt.replace("{sources}", "、".join(source_names[:6]))
 
         print(f"\n🔍 [DEBUG] 准备调用 DeepSeek API")
@@ -165,14 +160,11 @@ class AIFormatter:
 
     def _empty_report(self, sources: list[str]) -> str:
         """没有新闻时的空报告"""
-        today = datetime.now(CST).strftime("%Y年%m月%d日")
-        return f"""<h2>📰 {today} 每日早报</h2>
-<p style="color:#999;">今天没有抓取到新闻，可能是网络问题或 RSS 源暂时不可用。</p>
+        return """<p style="color:#999;">今天没有抓取到新闻，可能是网络问题或 RSS 源暂时不可用。</p>
 <p style="color:#999;font-size:12px;">来源：{"、".join(sources)}</p>"""
 
     def _fallback_format(self, items: list, sources: list[str]) -> str:
         """API 失败时的降级格式"""
-        today = datetime.now(CST).strftime("%Y年%m月%d日")
         items_html = ""
         for item in items[:20]:
             items_html += f'<li><a href="{item.url}"><strong>{item.title}</strong></a>'
@@ -180,8 +172,7 @@ class AIFormatter:
                 items_html += f" — {item.summary[:80]}"
             items_html += f'<br><small>来源：{item.source}</small></li>\n'
 
-        return f"""<h2>📰 {today} 每日早报</h2>
-<p style="color:#e67e22;">⚠️ AI 格式化暂不可用，以下为原始新闻列表</p>
+        return f"""<p style="color:#e67e22;">⚠️ AI 格式化暂不可用，以下为原始新闻列表</p>
 <ol>{items_html}</ol>
 <hr>
 <p style="color:#999;font-size:12px;">来源：{"、".join(sources)}</p>"""

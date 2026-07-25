@@ -30,7 +30,7 @@ deepseek:
 
 email:
   # 发件人 & 收件人（可在 .env 中覆盖）
-  subject_template: "📰 每日早报 - {date}"
+  subject_template: "每日早报 - {date}"
   # 是否发送纯文本备选（当 HTML 邮件客户端不支持时）
   send_plain_text_fallback: true
 
