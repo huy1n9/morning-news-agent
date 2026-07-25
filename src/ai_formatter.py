@@ -97,6 +97,12 @@ class AIFormatter:
         prompt = prompt.replace("{count}", str(len(news_items)))
         prompt = prompt.replace("{sources}", "、".join(source_names[:6]))
 
+        print(f"\n🔍 [DEBUG] 准备调用 DeepSeek API")
+        print(f"   model     = {self.model}")
+        print(f"   base_url  = {self.client.base_url}")
+        print(f"   api_key   = {self.client.api_key[:8]}***{self.client.api_key[-4:] if len(self.client.api_key) > 4 else '????'}")
+        print(f"   news条数  = {len(news_items)}")
+        print(f"   max_tokens= {self.max_tokens}")
         logger.info(f"正在调用 DeepSeek API ({self.model}) 格式化 {len(news_items)} 条新闻...")
 
         try:
@@ -121,6 +127,7 @@ class AIFormatter:
             html = html.strip()
 
             token_used = response.usage.total_tokens if response.usage else 0
+            print(f"✅ [DEBUG] DeepSeek API 调用成功，消耗 {token_used} tokens，HTML长度={len(html)}")
             logger.info(f"DeepSeek API 调用成功，消耗 {token_used} tokens")
             return html
 
@@ -129,15 +136,14 @@ class AIFormatter:
             error_detail = traceback.format_exc()
             logger.error(f"DeepSeek API 调用失败: {e}")
             logger.error(f"详细堆栈:\n{error_detail}")
-            # 也打印到 stderr，确保在 GitHub Actions 日志中可见
             import sys
-            print(f"\n{'='*60}", file=sys.stderr)
-            print(f"❌ DeepSeek API 调用失败", file=sys.stderr)
-            print(f"   错误类型: {type(e).__name__}", file=sys.stderr)
-            print(f"   错误信息: {e}", file=sys.stderr)
-            print(f"   模型: {self.model}", file=sys.stderr)
-            print(f"   API Base: {self.client.base_url}", file=sys.stderr)
-            print(f"{'='*60}\n", file=sys.stderr)
+            print(f"\n{'='*60}")
+            print(f"❌ [DEBUG] DeepSeek API 调用失败！进入降级逻辑...")
+            print(f"   错误类型: {type(e).__name__}")
+            print(f"   错误信息: {e}")
+            print(f"   模型: {self.model}")
+            print(f"   API Base: {self.client.base_url}")
+            print(f"{'='*60}\n")
             # 降级：返回简单的纯文本格式
             return self._fallback_format(news_items, source_names)
 
