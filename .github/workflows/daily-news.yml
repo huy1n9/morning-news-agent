@@ -2,8 +2,8 @@ name: 每日早报
 
 on:
   schedule:
-    # 北京时间每天早上 7:00 (UTC 23:00)
-    - cron: "0 23 * * *"
+    # 北京时间每天早上 6:00 (UTC 22:00)，加上 GitHub Actions 延迟约 7:00-7:30 到达
+    - cron: "0 22 * * *"
   # 允许手动触发测试
   workflow_dispatch:
 
@@ -32,8 +32,8 @@ jobs:
       - name: 运行每日早报
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL }}
-          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
+          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1' }}
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL || 'deepseek-chat' }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}

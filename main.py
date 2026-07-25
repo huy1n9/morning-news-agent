@@ -113,8 +113,8 @@ def main():
     logger.info("\n🤖 第2步：DeepSeek AI 格式化...")
     formatter = AIFormatter(
         api_key=deepseek_api_key,
-        base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
-        model=os.getenv("DEEPSEEK_MODEL", CONFIG["deepseek"]["model"]),
+        base_url=os.getenv("DEEPSEEK_BASE_URL") or "https://api.deepseek.com/v1",
+        model=os.getenv("DEEPSEEK_MODEL") or CONFIG["deepseek"]["model"],
         max_tokens=CONFIG["deepseek"].get("max_tokens", 4096),
         temperature=CONFIG["deepseek"].get("temperature", 0.3),
     )
