@@ -3,9 +3,8 @@
 # 聚焦国内中文新闻源，与 DeepSeek 模型配合最佳
 
 news:
-  # ── 国内直连源（科技/财经为主） ──
   sources:
-    # 科技资讯
+    # ── 科技资讯 ──
     - name: "IT之家"
       url: "https://www.ithome.com/rss/"
     - name: "36氪"
@@ -16,16 +15,50 @@ news:
       url: "https://www.oschina.net/news/rss"
     - name: "InfoQ 中文"
       url: "https://www.infoq.cn/feed"
+    - name: "虎嗅网"
+      url: "https://rss.huxiu.com/"
+    - name: "极客公园"
+      url: "https://www.geekpark.net/rss"
+    - name: "爱范儿"
+      url: "https://www.ifanr.com/feed"
+    - name: "机器之心"
+      url: "https://www.jiqizhixin.com/rss"
+    - name: "Solidot"
+      url: "https://www.solidot.org/index.rss"
+
+    # ── 综合新闻 ──
+    - name: "澎湃新闻"
+      url: "https://feedx.net/rss/thepaper.xml"
+    - name: "新华网"
+      url: "http://rss.xinhuanet.com/rss/native.xml"
+    - name: "网易新闻"
+      url: "http://news.163.com/special/00011K6L/rss_newsattitude.xml"
+
+    # ── 财经 ──
+    - name: "华尔街见闻"
+      url: "https://rsshub.app/wallstreetcn/global"
+    - name: "雪球"
+      url: "https://xueqiu.com/hots/topic/rss"
+    - name: "FT中文网"
+      url: "http://feeds.feedburner.com/FTCNFull"
+
+    # ── 国际 ──
+    - name: "BBC中文"
+      url: "https://feeds.bbci.co.uk/zhongwen/trad/rss.xml"
+    - name: "德国之声"
+      url: "https://rss.dw.com/xml/rss-zt-all"
+    - name: "联合早报"
+      url: "https://rsshub.app/zaobao/realtime/china"
 
   # 每个源最多获取条数
-  max_per_source: 15
+  max_per_source: 25
   # 总共最多保留条数（去重后）
-  max_total: 40
+  max_total: 80
 
 deepseek:
   # 模型：deepseek-v4-pro（最强）/ deepseek-v4-flash（更快更便宜）
   model: "deepseek-v4-flash"
-  max_tokens: 4096
+  max_tokens: 8192
   temperature: 0.3
 
 email:
