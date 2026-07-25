@@ -23,8 +23,8 @@ news:
   max_total: 40
 
 deepseek:
-  # 模型：deepseek-chat（性价比最高）/ deepseek-reasoner（推理更强）
-  model: "deepseek-chat"
+  # 模型：deepseek-v4-pro（最强）/ deepseek-v4-flash（更快更便宜）
+  model: "deepseek-v4-flash"
   max_tokens: 4096
   temperature: 0.3
 
