@@ -125,7 +125,19 @@ class AIFormatter:
             return html
 
         except Exception as e:
+            import traceback
+            error_detail = traceback.format_exc()
             logger.error(f"DeepSeek API 调用失败: {e}")
+            logger.error(f"详细堆栈:\n{error_detail}")
+            # 也打印到 stderr，确保在 GitHub Actions 日志中可见
+            import sys
+            print(f"\n{'='*60}", file=sys.stderr)
+            print(f"❌ DeepSeek API 调用失败", file=sys.stderr)
+            print(f"   错误类型: {type(e).__name__}", file=sys.stderr)
+            print(f"   错误信息: {e}", file=sys.stderr)
+            print(f"   模型: {self.model}", file=sys.stderr)
+            print(f"   API Base: {self.client.base_url}", file=sys.stderr)
+            print(f"{'='*60}\n", file=sys.stderr)
             # 降级：返回简单的纯文本格式
             return self._fallback_format(news_items, source_names)
 
