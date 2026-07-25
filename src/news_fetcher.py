@@ -85,7 +85,7 @@ class NewsFetcher:
                     all_items.extend(items)
             else:
                 logger.warning(
-                    f"⚠️ 已配置 {len(self.proxy_sources)} 个代理源，但未设置 HTTPS_PROXY 环境变量，跳过"
+                    f"[警告] 已配置 {len(self.proxy_sources)} 个代理源，但未设置 HTTPS_PROXY 环境变量，跳过"
                 )
                 logger.warning("   如需启用，请在 .env 中设置: HTTPS_PROXY=http://your-proxy:port")
 

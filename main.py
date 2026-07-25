@@ -68,13 +68,13 @@ def get_env_or_config(env_key: str, config_path: str, default: str = "") -> str:
 
 def main():
     logger.info("=" * 50)
-    logger.info("📰 每日早报 Agent 启动")
+    logger.info("[启动] 每日早报 Agent")
     logger.info("=" * 50)
 
     # ── 1. 配置检查 ──────────────────────────────────
     deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
     if not deepseek_api_key:
-        logger.error("❌ 未设置 DEEPSEEK_API_KEY，请在 .env 文件中配置")
+        logger.error("[错误] 未设置 DEEPSEEK_API_KEY，请在 .env 文件中配置")
         sys.exit(1)
 
     email_from = os.getenv("EMAIL_FROM", "")
@@ -85,15 +85,15 @@ def main():
     smtp_port = int(os.getenv("EMAIL_SMTP_PORT", "465"))
 
     if not all([email_from, email_to, email_password]):
-        logger.error("❌ 邮箱配置不完整，请检查 .env 文件中的 EMAIL_FROM, EMAIL_TO, EMAIL_PASSWORD")
+        logger.error("[错误] 邮箱配置不完整，请检查 .env 文件中的 EMAIL_FROM, EMAIL_TO, EMAIL_PASSWORD")
         logger.info("提示: 163 邮箱需要开启 SMTP 服务并获取授权码 → https://mail.163.com/ > 设置 > POP3/SMTP/IMAP")
         sys.exit(1)
 
     # ── 2. 抓取新闻 ──────────────────────────────────
-    logger.info("\n📡 第1步：抓取新闻...")
+    logger.info("\n[1/3] 抓取新闻...")
     sources = CONFIG.get("news", {}).get("sources", [])
     if not sources:
-        logger.error("❌ 未配置新闻源，请检查 config.yaml")
+        logger.error("[错误] 未配置新闻源，请检查 config.yaml")
         sys.exit(1)
 
     proxy_sources = CONFIG.get("news", {}).get("proxy_sources", [])
@@ -107,10 +107,10 @@ def main():
     news_items = fetcher.fetch_all()
 
     if not news_items:
-        logger.warning("⚠️ 未获取到任何新闻，将发送空报告")
+        logger.warning("[警告] 未获取到任何新闻，将发送空报告")
 
     # ── 3. AI 格式化 ──────────────────────────────────
-    logger.info("\n🤖 第2步：DeepSeek AI 格式化...")
+    logger.info("\n[2/3] DeepSeek AI 格式化...")
     formatter = AIFormatter(
         api_key=deepseek_api_key,
         base_url=os.getenv("DEEPSEEK_BASE_URL") or "https://api.deepseek.com/v1",
@@ -123,9 +123,9 @@ def main():
     html_body = formatter.format_news(news_items, all_source_names)
 
     # ── 4. 发送邮件 ──────────────────────────────────
-    logger.info("\n📧 第3步：发送邮件...")
+    logger.info("\n[3/3] 发送邮件...")
     today_str = datetime.now(CST).strftime("%Y-%m-%d")
-    subject_template = CONFIG["email"].get("subject_template", "📰 每日早报 - {date}")
+    subject_template = CONFIG["email"].get("subject_template", "每日早报 - {date}")
     subject = subject_template.format(date=today_str)
 
     sender = EmailSender(
@@ -140,11 +140,11 @@ def main():
 
     # ── 5. 结果 ──────────────────────────────────
     if success:
-        logger.info(f"\n✅ 早报发送成功！请检查 {email_to} 的收件箱")
+        logger.info(f"\n[成功] 早报发送成功！收件箱: {email_to}")
         logger.info(f"   主题: {subject}")
         logger.info(f"   新闻数: {len(news_items)} 条")
     else:
-        logger.error("\n❌ 早报发送失败，请查看上方日志排查问题")
+        logger.error("\n[失败] 早报发送失败，请查看上方日志排查问题")
         sys.exit(1)
 
 
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         logger.info("模式: 仅抓取新闻")
         deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
         if not deepseek_api_key:
-            logger.warning("⚠️ 未设置 DEEPSEEK_API_KEY（仅抓取不需要，但发邮件需要）")
+            logger.warning("[警告] 未设置 DEEPSEEK_API_KEY（仅抓取不需要，但发邮件需要）")
 
         sources = CONFIG.get("news", {}).get("sources", [])
         proxy_sources = CONFIG.get("news", {}).get("proxy_sources", [])
@@ -179,7 +179,7 @@ if __name__ == "__main__":
             proxy_sources=proxy_sources,
         )
         items = fetcher.fetch_all()
-        print(f"\n📊 共获取 {len(items)} 条新闻:\n")
+        print(f"\n[共 {len(items)} 条新闻]\n")
         for i, item in enumerate(items, 1):
             time_str = item.published.strftime("%m-%d %H:%M") if item.published else "?"
             print(f"{i:2d}. [{item.source:10s}] {item.title[:70]}")
@@ -188,13 +188,13 @@ if __name__ == "__main__":
 
     if args.test:
         logger.info("=" * 50)
-        logger.info("📰 每日早报 Agent — 测试模式")
+        logger.info("[测试] 每日早报 Agent — 测试模式")
         logger.info("=" * 50)
         logger.info("（测试模式：抓取 + 格式化，邮件内容输出到控制台）\n")
 
         deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
         if not deepseek_api_key:
-            logger.error("❌ 未设置 DEEPSEEK_API_KEY，请在 .env 文件中配置")
+            logger.error("[错误] 未设置 DEEPSEEK_API_KEY，请在 .env 文件中配置")
             sys.exit(1)
 
         # 抓取
@@ -209,7 +209,7 @@ if __name__ == "__main__":
         items = fetcher.fetch_all()
 
         if not items:
-            logger.warning("⚠️ 未获取到任何新闻")
+            logger.warning("[警告] 未获取到任何新闻")
             sys.exit(0)
 
         # 格式化
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
         # 输出到控制台
         print("\n" + "=" * 60)
-        print("  📧 邮件预览（HTML 会被邮件客户端渲染）")
+        print("  邮件预览（HTML 会被邮件客户端渲染）")
         print("=" * 60)
         print(html_body)
 

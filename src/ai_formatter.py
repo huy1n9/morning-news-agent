@@ -14,50 +14,52 @@ logger = logging.getLogger(__name__)
 CST = timezone(timedelta(hours=8))
 
 # DeepSeek 格式化提示词
-SYSTEM_PROMPT = """你是一位资深的新闻编辑，每天早上为读者制作一份简洁、专业的"每日早报"。
+SYSTEM_PROMPT = """你是一位资深新闻编辑，每天早上为读者制作一份高信息密度的"每日早报"。
 
-你的任务是将提供的原始新闻列表，整理成一份结构清晰、重点突出的新闻摘要。
+你的任务是从原始新闻列表中精选最有价值的新闻，按重要性排序，用精炼语言呈现核心信息。
 
 请严格按以下格式输出 HTML 邮件内容（邮件标题已包含日期，正文无需再写标题）：
 
-<p style="color:#666;">共 {count} 条重要新闻，祝你一天好心情 ☀️</p>
+<p style="color:#666;font-size:13px;">今日共精选 {count} 条重要新闻</p>
 
-<h3>🔥 要闻速览（Top 5）</h3>
+<h3>一、要闻速览（Top 5）</h3>
 <ol>
-  <li><strong>一句话标题概括</strong> — 1-2句新闻要点</li>
+  <li><strong>标题概括</strong> — 1-2句话概括事件核心与影响</li>
 </ol>
 
-<h3>🌍 国际</h3>
+<h3>二、国际</h3>
 <ul>
-  <li><strong>原标题</strong>：内容简介（20-40字）<br><small>来源：XXX</small></li>
+  <li><strong>原标题</strong>：60-100字精炼摘要，包含事件背景、关键数据和影响<br><small>来源：XXX</small></li>
 </ul>
 
-<h3>💻 科技</h3>
-<ul>
-  <li>...</li>
-</ul>
-
-<h3>💰 财经</h3>
+<h3>三、科技</h3>
 <ul>
   <li>...</li>
 </ul>
 
-<h3>🗞️ 其他值得关注</h3>
+<h3>四、财经</h3>
+<ul>
+  <li>...</li>
+</ul>
+
+<h3>五、其他值得关注</h3>
 <ul>
   <li>...</li>
 </ul>
 
 <hr>
-<p style="color:#999;font-size:12px;">本早报由 AI 自动生成，新闻来源包括：{sources}<br>仅供参考，不构成任何建议。</p>
+<p style="color:#999;font-size:12px;">本早报由 AI 自动生成，来源：{sources}<br>仅供参考，不构成任何建议。</p>
 
-要求：
-1. 对新闻进行分类（要闻、国际、科技、财经、其他），每类5-10条
-2. 每条新闻用 40-80 字做精炼总结，保留关键信息
-3. 同一事件的报道合并为一条，选择最权威的来源
-4. 优先报道与中文读者相关的新闻
-5. 如果没有某类新闻，可省略该版块
-6. 只输出 HTML 片段（从计数行到末尾），不要 ```html``` 标记
+编辑要求：
+1. 严格按重要性排序，头条必须是当日最有影响力的新闻
+2. 每条新闻用 60-100 字做精炼摘要，保留具体数据、人名、影响范围等关键信息
+3. 同一事件的多篇报道合并为一条，选用信息最完整的来源
+4. 合并同类新闻，避免信息碎片化（如同一主题的多条新闻可合并为一个条目）
+5. 优先报道对中文读者有直接影响的新闻
+6. 每类 5-10 条，某类无合适新闻可省略该版块
+7. 只输出 HTML 片段（从计数行到末尾），不要 ```html``` 标记
 """
+
 
 
 class AIFormatter:
@@ -92,11 +94,11 @@ class AIFormatter:
         prompt = SYSTEM_PROMPT.replace("{count}", str(len(news_items)))
         prompt = prompt.replace("{sources}", "、".join(source_names[:6]))
 
-        print(f"\n🔍 [DEBUG] 准备调用 DeepSeek API")
+        print(f"\n[DEBUG] 准备调用 DeepSeek API")
         print(f"   model     = {self.model}")
         print(f"   base_url  = {self.client.base_url}")
         print(f"   api_key   = {self.client.api_key[:8]}***{self.client.api_key[-4:] if len(self.client.api_key) > 4 else '????'}")
-        print(f"   news条数  = {len(news_items)}")
+        print(f"   news_count= {len(news_items)}")
         print(f"   max_tokens= {self.max_tokens}")
         logger.info(f"正在调用 DeepSeek API ({self.model}) 格式化 {len(news_items)} 条新闻...")
 
@@ -122,7 +124,7 @@ class AIFormatter:
             html = html.strip()
 
             token_used = response.usage.total_tokens if response.usage else 0
-            print(f"✅ [DEBUG] DeepSeek API 调用成功，消耗 {token_used} tokens，HTML长度={len(html)}")
+            print(f"[成功] DeepSeek API 调用完成，消耗 {token_used} tokens，HTML长度={len(html)}")
             logger.info(f"DeepSeek API 调用成功，消耗 {token_used} tokens")
             return html
 
@@ -133,7 +135,7 @@ class AIFormatter:
             logger.error(f"详细堆栈:\n{error_detail}")
             import sys
             print(f"\n{'='*60}")
-            print(f"❌ [DEBUG] DeepSeek API 调用失败！进入降级逻辑...")
+            print(f"[错误] DeepSeek API 调用失败，进入降级逻辑...")
             print(f"   错误类型: {type(e).__name__}")
             print(f"   错误信息: {e}")
             print(f"   模型: {self.model}")
@@ -172,7 +174,7 @@ class AIFormatter:
                 items_html += f" — {item.summary[:80]}"
             items_html += f'<br><small>来源：{item.source}</small></li>\n'
 
-        return f"""<p style="color:#e67e22;">⚠️ AI 格式化暂不可用，以下为原始新闻列表</p>
+        return f"""<p style="color:#e67e22;">[注意] AI 格式化暂不可用，以下为原始新闻列表</p>
 <ol>{items_html}</ol>
 <hr>
 <p style="color:#999;font-size:12px;">来源：{"、".join(sources)}</p>"""
